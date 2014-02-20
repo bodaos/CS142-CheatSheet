@@ -346,6 +346,60 @@ Cookie: session=0x4137fd6a
   <input type="submit" value="Submit"/>
 </form>
 \end{verbatim}
+\item \textbf{Form Tag}
+\begin{verbatim}
+<%= form_for(@student, method: :post,
+    url: {action: :update, id: @student.id}) do |form| %>
+  <%= form.text_field(:name) %>
+  <%= form.text_field(:birth) %>
+  <%= form.text_field(:gpa) %>
+  <%= form.text_field(:grad) %>
+  <%= form.submit "Modify Student" %>
+<% end %>
+\end{verbatim}
+\item \textbf{Update Backend}
+\begin{verbatim}
+def update
+  @student = Student.find(params[:id])
+  if @student.update(student_params(params[:student])) then
+    redirect_to(:action => :show)
+  else
+    render(:action => :edit)
+  end
+end
+
+private
+def student_params(params)
+  return params.permit(:name, :birth, :gpa, :grad)
+end
+def create
+  @student = Student.new(student_params(params[:student]))
+  if @student.save then
+    redirect_to(:action => :show)
+  else
+    render(:action => :edit)
+  end
+end
+\end{verbatim}
+\item \textbf{Validation}
+\begin{verbatim}
+class Student < ActiveRecord::Base
+  validates_format_of :birth, :with => /\d\d\d\d-\d\d-\d\d/,
+      :message => "must have format YYYY-MM-DD"
+  def validate_gpa
+    if (gpa < 0) || (gpa > 4.0) then
+      errors.add(:gpa, "must be between 0.0 and 4.0")
+    end
+  end
+  validate :validate_gpa
+end
+\end{verbatim}
+\item \textbf{Form Errors}
+\begin{verbatim}
+<% @student.errors.full_messages.each do |msg| %>
+  <p><%= msg %></p>
+<% end %>
+\end{verbatim}
 \end{itemize}
 % You can even have references
 \rule{0.3\linewidth}{0.25pt}
